@@ -5,7 +5,7 @@ Liquidity Sensitive Dynamic LMSR
 # Liquidity Sensitive Dynamic LMSR
 This is a new Market Scoring Rule made for Zeitgeist Liquidity Pools.
 
-##Content:
+## Content:
 We have 2 main files:
 1- lsdLMSRCoreFunctions.py --> contains the main functions for doing model calculations.
 2- LSD-LMSR.py --> contains the simulation (this is the file that you need to execute).
