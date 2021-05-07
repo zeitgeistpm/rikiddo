@@ -11,17 +11,26 @@ import time
 from tqdm import tqdm
 # import getKnownAssetValues
 
-symbol1= 'BUSDUSDT'
-symbol2= 'BNBUSDT'
+#Implementations from the last commit:
+#   Set a market signal for one or the other
+#   Set a market perception rate (let's say: how educated are the people in the market to perceive this signals)
+#   Give the opportunity to accept or decline the fee rate 
+#   Put bounds on liquidity (make the fee as high as possible on this bounds)
+
+
+symbol1= 'Will'
+symbol2= 'Will_not'
 
 fee, m, p, n, k = 0.03, 0.005, 6, 0.9, 1 #assume a low correlated pair of assets
-
+traderMaxFee = 0.038
 
 # %% Simulation Settings
 b = 0.75
 minRev = minRevenue(b, fee)
 q_1 = 30000 
 q_2 = 1000000
+liquidityBounds = [q_1<10000, q_2<10000]
+#Research on initial values
 
 ratio_q_1 = q_1 / (q_1 + q_2)
 ratio_q_2 = q_2 / (q_1 + q_2)
@@ -48,18 +57,24 @@ transaction = 0
 start_time = time.time()
 print('--------------------------------------LOOP PRINTS--------------------------------------')
 #%% Loop simulation
-# for i in tqdm(range(4000)):
+
+symbols = [symbol1, symbol2]
 while time.time() - start_time <4:
     transaction += 1
-    symbols = [symbol1, symbol2]
     poolInventory= [q_1, q_2]
-    buyAsset = random.choice(symbols)
+    signals = [0.5, 0.5]
+
+    #The signal changes every 500 transactions
+    if transaction%500 == 0:
+        signals[0] = random.random()
+        signals[1] = 1 - signals[0]
+    
+    buyAsset = np.random.choice(symbols, 1, True, signals)
     indexNum = symbols.index(buyAsset)
     if indexNum == 0:
         yElement = symbols[1]
     else:
         yElement = symbols[0]
-    # print(indexNum)
     # print(f'We are going to buy {buyAsset} and we will give away {yElement}')
 
     r = getVolumeRatio(symbols, simulationRecord)
@@ -82,46 +97,42 @@ while time.time() - start_time <4:
     if (q_1<0) | (q_2<0): 
         print('no liquidity')
         break
-    #cost function 
-    eVal, dynamicFee = eValue(poolInventory, totalFee)
-    C_q = lsdCostFunction([q_1, q_2], eVal, dynamicFee)
+    
+        ########################## ESTABLISHING BOUNDS FOR THE POOL ###################################
+    if any(liquidityBounds):
+        totalFee = 0.5
+    
+    if totalFee <= traderMaxFee:
+        #Cost function 
+        eVal, dynamicFee = eValue(poolInventory, totalFee)
+        C_q = lsdCostFunction([q_1, q_2], eVal, dynamicFee)
 
-    transactCost = C_q - data['transactCost'][-1]
+        transactCost = C_q - data['transactCost'][-1]
 
-    previousState =[data[f'account_{symbol1}'][-1], data[f'account_{symbol2}'][-1]]
+        previousState =[data[f'account_{symbol1}'][-1], data[f'account_{symbol2}'][-1]]
 
-    P_q_1 = lsdPriceFunction_i(C_q, totalFee, previousState, poolInventory)
+        P_q_1 = lsdPriceFunction_i(C_q, totalFee, previousState, poolInventory)
 
-    print(C_q, P_q_1)
+        print(C_q, P_q_1)
 
+        data['transactionNumber'].append(transaction)
+        data[f'account_{symbol1}'].append(q_1)
+        data[f'account_{symbol2}'].append(q_2)
+        data['totalFee'].append(totalFee)
+        data['whoBuy'].append(buyAsset)
+        data['ratioVolume'].append(r)
+        data['z'].append(z)
+        if indexNum == 0:
+            data['sell'].append(deltaQ*ratio_q_2)
+        else:
+            data['sell'].append(deltaQ*ratio_q_1)
+        data['buy'].append(deltaQ)
+        data['transactCost'].append(transactCost)
 
-#     ########################## ESTABLISHING BOUNDS FOR THE POOL ###################################
-#     # print(f'final fee: {totalFee}')
-
-#     if (totalFee> minFee) & (totalFee<maxFee):
-#         # print("The total fee is in range, you don't have liquidity problems")
-#         pass
-#     else:
-#         print("The total fee is OUT OF RANGE, you have liquidity problems, so we will turn down your pool")
-#         break
-
-
-
-    data['transactionNumber'].append(transaction)
-    data[f'account_{symbol1}'].append(q_1)
-    data[f'account_{symbol2}'].append(q_2)
-    data['totalFee'].append(totalFee)
-    data['whoBuy'].append(buyAsset)
-    data['ratioVolume'].append(r)
-    data['z'].append(z)
-    if indexNum == 0:
-        data['sell'].append(deltaQ*ratio_q_2)
+        transaction += 1
+    
     else:
-        data['sell'].append(deltaQ*ratio_q_1)
-    data['buy'].append(deltaQ)
-    data['transactCost'].append(transactCost)
-
-    transaction += 1
+        print('Fee is too high for the trader')
 
 ###############################################################################################
 
