@@ -9,14 +9,6 @@ import numpy as np
 import random
 import time
 from tqdm import tqdm
-# import getKnownAssetValues
-
-#Implementations from the last commit:
-#   Set a market signal for one or the other
-#   Set a market perception rate (let's say: how educated are the people in the market to perceive this signals)
-#   Give the opportunity to accept or decline the fee rate 
-#   Put bounds on liquidity (make the fee as high as possible on this bounds)
-
 
 symbol1= 'Will'
 symbol2= 'Will_not'
@@ -27,7 +19,7 @@ traderMaxFee = 0.038
 # %% Simulation Settings
 b = 0.75
 minRev = minRevenue(b, fee)
-q_1 = 30000 
+q_1 = 100000 
 q_2 = 1000000
 liquidityBounds = [q_1<10000, q_2<10000]
 #Research on initial values
@@ -43,6 +35,7 @@ account2 = f'account_{symbol2}'
 data = {'transactionNumber': [0], 
         account1 : [q_1], 
         account2: [q_2], 
+        'totalVolume': q_1+q_2,
         'totalFee': [fee], 
         'whoBuy': ['Initial'], 
         'ratioVolume': [q_1/q_2], 
@@ -59,8 +52,8 @@ print('--------------------------------------LOOP PRINTS------------------------
 #%% Loop simulation
 
 symbols = [symbol1, symbol2]
-while time.time() - start_time <4:
-    transaction += 1
+while time.time() - start_time <100:
+    # transaction += 1
     poolInventory= [q_1, q_2]
     signals = [0.5, 0.5]
 
@@ -77,7 +70,7 @@ while time.time() - start_time <4:
         yElement = symbols[0]
     # print(f'We are going to buy {buyAsset} and we will give away {yElement}')
 
-    r = getVolumeRatio(symbols, simulationRecord)
+    r = getVolumeRatio('totalVolume', simulationRecord)
     z = z_r(r, m, p, n)
     totalFee = fee + z
     if totalFee < minRev:
@@ -85,26 +78,31 @@ while time.time() - start_time <4:
         totalFee = minRev
 
     #how much you want to buy
-    deltaQ = random.uniform(0, 5000)
+    deltaQ = random.uniform(0, 1000)
 
-    if indexNum == 0:
-        q_1 += deltaQ
-        q_2 -= deltaQ*ratio_q_2
-    else:
-        q_1 -= deltaQ*ratio_q_1
-        q_2 += deltaQ
-
-    if (q_1<0) | (q_2<0): 
-        print('no liquidity')
-        break
+    
     
         ########################## ESTABLISHING BOUNDS FOR THE POOL ###################################
-    if any(liquidityBounds):
+    if (q_1<15000) | (q_2<15000):
+        print('LIQUIDITY WARNING: Rising fee dramatically')
         totalFee = 0.5
     
     if totalFee <= traderMaxFee:
+        #LO QUE TIENE QUE RECHAZAR ACÁ ES EL COSTO DE LA OPERACIÓN MAS QUE LA FEE, DIGAMOS EL C(q1+x,q2)-C(q1,q2). CORREGIR IF STATEMENT
         #Cost function 
         eVal, dynamicFee = eValue(poolInventory, totalFee)
+
+        if indexNum == 0:
+            q_1 -= deltaQ
+            # q_2 -= deltaQ*ratio_q_2
+        else:
+            # q_1 -= deltaQ*ratio_q_1
+            q_2 -= deltaQ
+
+        if (q_1<0) | (q_2<0): 
+            print('no liquidity')
+            break
+
         C_q = lsdCostFunction([q_1, q_2], eVal, dynamicFee)
 
         transactCost = C_q - data['transactCost'][-1]
@@ -115,19 +113,25 @@ while time.time() - start_time <4:
 
         print(C_q, P_q_1)
 
-        data['transactionNumber'].append(transaction)
-        data[f'account_{symbol1}'].append(q_1)
-        data[f'account_{symbol2}'].append(q_2)
-        data['totalFee'].append(totalFee)
-        data['whoBuy'].append(buyAsset)
-        data['ratioVolume'].append(r)
-        data['z'].append(z)
         if indexNum == 0:
-            data['sell'].append(deltaQ*ratio_q_2)
+            sell = deltaQ*ratio_q_2
         else:
-            data['sell'].append(deltaQ*ratio_q_1)
-        data['buy'].append(deltaQ)
-        data['transactCost'].append(transactCost)
+            sell = deltaQ*ratio_q_1
+
+        simdata = {'transactionNumber': [transaction], 
+        account1 : [q_1], 
+        account2: [q_2], 
+        'totalVolume': [q_1+q_2],
+        'totalFee': [totalFee], 
+        'whoBuy': [buyAsset], 
+        'ratioVolume': [r], 
+        'z': [z], 
+        'buy': [deltaQ], 
+        'sell': [sell],
+        'transactCost': [transactCost]}
+
+        df_simdata = pd.DataFrame(data=simdata)
+        simulationRecord = simulationRecord.append(df_simdata)
 
         transaction += 1
     
@@ -138,7 +142,6 @@ while time.time() - start_time <4:
 
 print("--- %s seconds ---" % (time.time() - start_time))
 print(f'We made {transaction} transactions in 4 seconds with LSD-LMSR')
-simulationRecord = simulationRecord.append(pd.DataFrame.from_dict(data))
 simulationRecord.to_csv('simulationRecord.csv')
 
 netProfit = sum(data['transactCost'])
