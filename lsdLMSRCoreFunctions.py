@@ -6,48 +6,39 @@ import numpy as np
 import random
 import math
 
-def getVolumeRatio(symbols, df):
+def getVolumeRatio(totalCol, df):
     '''
-    symbols: a list of every symbol in the pool
+    totalCol: the name of the column that stores the total volume of the entire amount of assets.
     df: the name of the dataframe where the data is storaged
     '''
-    volumeSum = list([])
-    for i in range(0,df.shape[0]):
-        rowSum= 0
-        for symbol in symbols:
-            colname = f'account_{symbol}'
-            rowSum += df[colname][i]
-        volumeSum += [rowSum]
-        #More efficient way: sum directly the columns (con: this is possible because we are working with a DF. Check out Rust availability)
-
-    # periodLengthLong = math.ceil(df.shape[0]*0.3)
-    # if periodLengthLong==0:
-    #     periodLengthLong = 1
-    
+    temp = df.copy()
+    volumeSum = temp[totalCol]
     periodLengthLong = 2
-    if df.shape[0]<2:
-        periodLengthLong = 1
-    #calculate EMA for the average volume
-    if len(volumeSum) >1:
-        longWindow = pd.Series(volumeSum).ewm(span=periodLengthLong).mean()[-1]
-    else:
-        longWindow = volumeSum
-    
-    # periodLengthShort = math.ceil(df.shape[0]*0.1)
-    # if periodLengthShort == 0:
-    #     periodLengthShort = 1
-    
     periodLengthShort = 1
     if df.shape[0]<1:
         periodLengthShort = 1
-
-    if len(volumeSum)>1:
-        shortWindow = pd.series(volumeSum).ewm(span=periodLengthShort).mean()[-1]
+    if df.shape[0]<2:
+        periodLengthLong = 1
+    #calculate EMA for the average volume
+    if len(volumeSum) >3:
+        longWindow = math.ceil((temp[totalCol].rolling(periodLengthLong).mean().tolist())[-1])
+        shortWindow = math.ceil((temp[totalCol].rolling(periodLengthShort).mean()).tolist()[-1])
     else:
-        shortWindow = volumeSum
-    r = shortWindow[-1]/longWindow[-1]
-    return r
+        print('long len less than 2')
+        if len(volumeSum)>1:
+            shortWindow = volumeSum.mean()
+            longWindow = volumeSum.mean()
+        elif len(volumeSum)==1:
+            shortWindow = math.ceil(volumeSum[0])
+            longWindow = math.ceil(volumeSum[0])
 
+    if longWindow ==0:
+        r = 0
+    else:
+        r = shortWindow/longWindow
+
+
+    return r
 
 def z_r(r, m, p, n):
     z = (m*(r-n))/math.sqrt(p + (r-n)**2)
