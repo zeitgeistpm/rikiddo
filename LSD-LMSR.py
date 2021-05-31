@@ -9,15 +9,18 @@ import numpy as np
 import random
 import time
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+# import getKnownAssetValues
+
 
 symbol1= 'Will'
 symbol2= 'Will_not'
 
-fee, m, p, n, k = 0.03, 0.005, 6, 0.9, 1 #assume a low correlated pair of assets
-traderMaxFee = 0.038
+fee, m, p, n, k = 0.03, 0.8, 8, 1, 1 #assume a low correlated pair of assets
+traderMaxFee = 10.2
 
 # %% Simulation Settings
-b = 0.75
+b = 0.7
 minRev = minRevenue(b, fee)
 q_1 = 1000000 #max volume available for q_1 
 q_2 = 1000000 #max volume available for q_2
@@ -47,12 +50,12 @@ data = {'transactionNumber': [0],
         'whoBuy': ['Initial'], 
         'ratioVolume': [q_1/q_2], 
         'z': [0], 
-        # 'buy': ['Initial'], 
-        # 'sell': ['Initial'],
+        'order': ['Initial'],
         'transactCost': [0],
         'previousCost': [0],
         'deltaQ': [0],
-        'costPerUnit': [0]}
+        'costPerUnit': [0], 
+        'r': 1}
 
 simulationRecord = simulationRecord.append(pd.DataFrame.from_dict(data))
 
@@ -63,25 +66,39 @@ print('--------------------------------------LOOP PRINTS------------------------
 
 symbols = [symbol1, symbol2]
 previousStateCost = 0
-while time.time() - start_time <20:
+while time.time() - start_time <4:
     # transaction += 1
     poolInventory= [q_1_pool, q_2_pool]
+    buysell = ['buy', 'sell']
     signals = [0.5, 0.5]
+    buysellSignals = [0.5, 0.5]
 
     #The signal changes every 500 transactions
     if transaction%500 == 0:
         signals[0] = random.random()
         signals[1] = 1 - signals[0]
+        buysellSignals[0] = 1 - signals[0]
+        buysellSignals[1] = signals[0]
     
     buyAsset = np.random.choice(symbols, 1, True, signals)
+
+    marketSignal = np.random.choice(buysell, 1, True, buysellSignals)
+
     indexNum = symbols.index(buyAsset)
     if indexNum == 0:
         yElement = symbols[1]
     else:
         yElement = symbols[0]
     # print(f'We are going to buy {buyAsset} and we will give away {yElement}')
+    
+    if (q_1>=1000000) | (q_2>=1000000) | (q_1_pool<=0) | (q_2_pool<=0) & (marketSignal == 'sell'):
+        marketSignal = 'buy'
+    
 
-    r = getVolumeRatio('totalPoolVolume', simulationRecord)
+
+    asset_pool = f'account_{symbols[indexNum]}_pool'
+    r = getVolumeRatio('totalPoolVolume', simulationRecord, transaction)
+
     z = z_r(r, m, p, n)
     totalFee = fee + z
     if totalFee < minRev:
@@ -102,16 +119,26 @@ while time.time() - start_time <20:
         #Cost function 
         eVal, dynamicFee = eValue(poolInventory, totalFee)
 
-        if indexNum == 0:
-            q_1 -= deltaQ
-            q_1_pool += deltaQ
-        else:
-            q_2_pool += deltaQ
-            q_2 -= deltaQ
+        if marketSignal == 'buy':
+            if indexNum == 0:
+                q_1 -= deltaQ
+                q_1_pool += deltaQ
+            else:
+                q_2_pool += deltaQ
+                q_2 -= deltaQ
 
-        if (q_1<0) | (q_2<0): 
-            print('no liquidity')
-            break
+            if (q_1<0) | (q_2<0): 
+                print('no liquidity')
+                break
+        
+        elif marketSignal == 'sell':
+            if indexNum == 0:
+                q_1 += deltaQ
+                q_1_pool -= deltaQ
+            else:
+                q_2_pool -= deltaQ
+                q_2 += deltaQ
+        
 
         C_q = lsdCostFunction([q_1_pool, q_2_pool], eVal, dynamicFee)
         
@@ -123,10 +150,10 @@ while time.time() - start_time <20:
 
         print(C_q, P_q_1)
 
-        if indexNum == 0:
-            sell = deltaQ*ratio_q_2
-        else:
-            sell = deltaQ*ratio_q_1
+        # if indexNum == 0:
+        #     sell = deltaQ*ratio_q_2
+        # else:
+        #     sell = deltaQ*ratio_q_1
 
         costPerUnit = (transactCost-deltaQ)/deltaQ
 
@@ -141,12 +168,12 @@ while time.time() - start_time <20:
         'whoBuy': [buyAsset], 
         'ratioVolume': [r], 
         'z': [z], 
-        # 'buy': [deltaQ], 
-        # 'sell': [sell],
+        'order': [marketSignal],
         'transactCost': [transactCost],
         'previousCost': [previousStateCost],
         'deltaQ': [deltaQ],
-        'costPerUnit': [costPerUnit]}
+        'costPerUnit': [costPerUnit], 
+        'r': r}
 
         df_simdata = pd.DataFrame(data=simdata)
         simulationRecord = simulationRecord.append(df_simdata)
@@ -163,18 +190,16 @@ print("--- %s seconds ---" % (time.time() - start_time))
 print(f'We made {transaction} transactions in 4 seconds with LSD-LMSR')
 simulationRecord.to_csv('simulationRecord.csv')
 
-netProfit = sum(data['transactCost'])
-print(f'the Liquidity Providers will make {netProfit}')
-
 plt.scatter(simulationRecord['totalFee'], simulationRecord['transactCost'])
 plt.xlabel('Total Fee')
 plt.ylabel('Transaction Cost')
-plt.xlim([0.0297, 0.031])
+# plt.xlim([0.02, 0.05])
 plt.savefig('fee-cost.png')
 plt.show()
 
-# plt.scatter(simulationRecord['profitCumSum'], simulationRecord['transactCost'], c=simulationRecord['totalFee'])
-# plt.xlabel('profit Sum')
-# plt.ylabel('Transaction Cost')
-# plt.savefig('profitsum-cost.png')
-# plt.show()
+plt.scatter(simulationRecord['r'], simulationRecord['totalFee'])
+plt.xlabel('r')
+plt.ylabel('Total Fee')
+# plt.ylim([0.02, 0.04])
+plt.savefig('profitsum-cost.png')
+plt.show()
