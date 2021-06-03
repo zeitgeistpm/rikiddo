@@ -3,7 +3,6 @@ from lsdLMSRCoreFunctions import getVolumeRatio, z_r, eValue, lsdCostFunction, l
 # from getAssetData import getVolumeData
 import pandas as pd
 from datetime import datetime, date, timedelta
-from scipy.stats import pearsonr
 import json
 import numpy as np
 import random
