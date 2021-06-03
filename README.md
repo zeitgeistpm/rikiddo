@@ -12,7 +12,7 @@ We have 2 main files:
 2- LSD-LMSR.py --> contains the simulation (this is the file that you need to execute).
 
 3- requirements.txt --> install the necessary dependencies to run the simulation (we are using python 3). Disclaimer: it is possible that the pandas package might take a while. In case that you are using Debian, Ubuntu or MacOS, we recommend you to install it separately using: 
-        **sudo apt-get install python3-pandas**
+        `sudo apt-get install python3-pandas`
 
 Once you install all the necessary dependencies with `pip install -r requirements.txt` or `pip3 install -r requirements.txt`, you are good to go! Inside the LSD-LMSR.py file, you will be able to modify some parameters to change the behaviour of your simulation.
 
