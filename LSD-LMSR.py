@@ -1,6 +1,5 @@
 import math
 from lsdLMSRCoreFunctions import getVolumeRatio, z_r, eValue, lsdCostFunction, lsdPriceFunction_i, minRevenue
-# from getAssetData import getVolumeData
 import pandas as pd
 from datetime import datetime, date, timedelta
 import json
@@ -8,13 +7,11 @@ import numpy as np
 import random
 import time
 import matplotlib.pyplot as plt
-# import getKnownAssetValues
-
 
 symbol1= 'Will'
 symbol2= 'Will_not'
 
-fee, m, p, n, k = 0.03, 0.8, 8, 1, 1 #assume a low correlated pair of assets
+fee, m, p, n, k = 0.03, 0.8, 8, 1, 1 #low correlated pair of assets
 traderMaxFee = 10.2
 
 # %% Simulation Settings
@@ -25,7 +22,6 @@ q_2 = 1000000 #max volume available for q_2
 q_1_pool = 0 #amount of q_1 inside the pool
 q_2_pool = 0 #amount of q_2 inside the pool
 liquidityBounds = [q_1<10000, q_2<10000]
-#Research on initial values
 
 ratio_q_1 = q_1 / (q_1 + q_2)
 ratio_q_2 = q_2 / (q_1 + q_2)
@@ -87,12 +83,10 @@ while time.time() - start_time <4:
         yElement = symbols[1]
     else:
         yElement = symbols[0]
-    # print(f'We are going to buy {buyAsset} and we will give away {yElement}')
     
     if (q_1>=1000000) | (q_2>=1000000) | (q_1_pool<=0) | (q_2_pool<=0) & (marketSignal == 'sell'):
         marketSignal = 'buy'
-    
-
+        #establishing bounds to the buy or sell decission
 
     asset_pool = f'account_{symbols[indexNum]}_pool'
     r = getVolumeRatio('totalPoolVolume', simulationRecord, transaction)
@@ -103,12 +97,10 @@ while time.time() - start_time <4:
         print('Your fee is lower than expected. Bounding with minRevenue')
         totalFee = minRev
 
-    #how much you want to buy
+    #how much you want to buy or sell
     deltaQ = random.uniform(0, 1000)
 
-    
-    
-        ########################## ESTABLISHING BOUNDS FOR THE POOL ###################################
+    #Pool liquidity bounds
     if (q_1<15000) | (q_2<15000):
         print('LIQUIDITY WARNING: Rising fee dramatically')
         totalFee = 0.5
@@ -148,11 +140,6 @@ while time.time() - start_time <4:
 
         print(C_q, P_q_1)
 
-        # if indexNum == 0:
-        #     sell = deltaQ*ratio_q_2
-        # else:
-        #     sell = deltaQ*ratio_q_1
-
         costPerUnit = (transactCost-deltaQ)/deltaQ
 
         simdata = {'transactionNumber': [transaction], 
@@ -191,13 +178,11 @@ simulationRecord.to_csv('simulationRecord.csv')
 plt.scatter(simulationRecord['totalFee'], simulationRecord['transactCost'])
 plt.xlabel('Total Fee')
 plt.ylabel('Transaction Cost')
-# plt.xlim([0.02, 0.05])
 plt.savefig('fee-cost.png')
 plt.show()
 
 plt.scatter(simulationRecord['r'], simulationRecord['totalFee'])
 plt.xlabel('r')
 plt.ylabel('Total Fee')
-# plt.ylim([0.02, 0.04])
 plt.savefig('profitsum-cost.png')
 plt.show()
