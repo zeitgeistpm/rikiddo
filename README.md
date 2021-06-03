@@ -22,6 +22,7 @@ Into the LSD-LMSR.py file you could modify the following values:
 - b: proportion of the initial fee that the liquidity pool needs to ensure for the liquidity providers.
 - q_1 and q_2: max volume that is  willing to assign to every asset.
 - liquidityBounds: this defines the criteria to introduce bounds to the pool (the fees at this point elevates to the 50%. If you want to modify this, change the 0.5 to any value between 0 and 1 in line 103).
+- traderMaxFee: the maximum fee that a trader is willing to accept.
 - 500 in line 71: represents the amount of time that a market signal (weight for buying or selling more of an asset than the other) remains the same.
 
 ## What you'll be able to modify into the core functions file lsdLMSRCoreFunctions.py (optional):
