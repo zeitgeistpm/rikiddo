@@ -26,8 +26,8 @@ Into the LSD-LMSR.py file you could modify the following values:
 
 ## What you'll be able to modify into the core functions file lsdLMSRCoreFunctions.py (optional):
 - z function: now we use a sigmoid function, but you can use whatever function that accomplish the following requirements:
-      - takes an r parameter equals to the ratio between the volume of a short period vs the volume of a larger period
-      - the first partial derivate of z and r is non-negative
+      1- takes an r parameter equals to the ratio between the volume of a short period vs the volume of a larger period, 
+      2- the first partial derivate of z and r is non-negative
 
 
 ## Simulation Mechanism:
