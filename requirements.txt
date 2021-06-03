@@ -6,5 +6,4 @@ json
 numpy
 random
 time
-tqdm
 matplotlib
