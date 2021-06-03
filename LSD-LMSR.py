@@ -12,7 +12,7 @@ symbol1= 'Will'
 symbol2= 'Will_not'
 
 fee, m, p, n, k = 0.03, 0.8, 8, 1, 1 #low correlated pair of assets
-traderMaxFee = 10.2
+traderMaxFee = 0.5
 
 # %% Simulation Settings
 b = 0.7
