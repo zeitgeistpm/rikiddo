@@ -12,12 +12,16 @@ def getVolumeRatio(totalCol, df):
     '''
     temp = df.copy()
     volumeSum = temp[totalCol]
-    periodLengthLong = 2
-    periodLengthShort = 1
+    if transactionNumber+1 <7:
+        periodLengthLong = transactionNumber+1
+    else:
+        periodLengthLong = 6 
+    periodLengthShort = 1 
     if df.shape[0]<1:
         periodLengthShort = 1
     if df.shape[0]<2:
         periodLengthLong = 1
+
     #calculate EMA for the average volume
     if len(volumeSum) >3:
         longWindow = math.ceil((temp[totalCol].rolling(periodLengthLong).mean().tolist())[-1])
@@ -50,11 +54,17 @@ def eValue(q, totalFee, q_x=None):
     dynamicFee = (totalFee)*sumQ
     if q_x == None:
         for q_i in q:
-            e = math.exp(q_i/dynamicFee)
+            if dynamicFee !=0:
+                e = math.exp(q_i/dynamicFee)
+            else:
+                e = math.exp(q_i/0.03) #0.03 is the fixed value assumed for the initial fee
             eVal += e
     else:
         for q_i in q.remove(q_x):
-            e = math.exp(q_i/dynamicFee)
+            if dynamicFee !=0:
+                e = math.exp(q_i/dynamicFee)
+            else:
+                e = math.exp(q_i/0.03)
             eVal += e
 
     return eVal, dynamicFee
@@ -88,7 +98,10 @@ def lsdPriceFunction_i(costFunction,totalFee,q_i,q_j):
     
     numerator = e_i*sumQj - qxe
     denominator = sumQj*sum_ej
-    p_i = costFunction + (numerator/denominator)
+    if sumQj != 0:
+        p_i = costFunction + (numerator/denominator)
+    else:
+        p_i = costFunction
     return p_i
 
 def minRevenue(b, fee):
