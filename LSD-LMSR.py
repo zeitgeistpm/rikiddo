@@ -6,7 +6,7 @@ import json
 import numpy as np
 import random
 import time
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 random.seed(1)
 
@@ -177,23 +177,23 @@ print("--- %s seconds ---" % (time.time() - start_time))
 print(f'We made {transaction} transactions in 4 seconds with LSD-LMSR')
 simulationRecord.to_csv('simulationRecord.csv')
 
-# plt.scatter(simulationRecord['totalFee'], simulationRecord['transactCost'])
-# plt.axvline(simulationRecord['totalFee'].mean(), color='r', linestyle='-')
-# plt.xlabel('Total Fee')
-# plt.ylabel('Transaction Cost')
-# plt.savefig('fee-cost.png')
-# plt.show()
+plt.scatter(simulationRecord['totalFee'], simulationRecord['transactCost'])
+plt.axvline(simulationRecord['totalFee'].mean(), color='r', linestyle='-')
+plt.xlabel('Total Fee')
+plt.ylabel('Transaction Cost')
+plt.savefig('fee-cost.png')
+plt.show()
 
-# plt.scatter(simulationRecord['z'], simulationRecord['transactCost'])
-# plt.axvline(simulationRecord['z'].mean(), color='r', linestyle='-')
-# plt.xlabel('Dynamic Fee')
-# plt.ylabel('Transaction Cost')
-# plt.savefig('dynfee-cost.png')
-# plt.show()
+plt.scatter(simulationRecord['z'], simulationRecord['transactCost'])
+plt.axvline(simulationRecord['z'].mean(), color='r', linestyle='-')
+plt.xlabel('Dynamic Fee')
+plt.ylabel('Transaction Cost')
+plt.savefig('dynfee-cost.png')
+plt.show()
 
-# plt.scatter(simulationRecord['r'], simulationRecord['totalFee'])
-# plt.axhline(simulationRecord['totalFee'].mean(), color='r', linestyle='-')
-# plt.xlabel('r')
-# plt.ylabel('Total Fee')
-# plt.savefig('profitsum-cost.png')
-# plt.show()
+plt.scatter(simulationRecord['r'], simulationRecord['totalFee'])
+plt.axhline(simulationRecord['totalFee'].mean(), color='r', linestyle='-')
+plt.xlabel('r')
+plt.ylabel('Total Fee')
+plt.savefig('profitsum-cost.png')
+plt.show()
