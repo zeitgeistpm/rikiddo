@@ -5,7 +5,7 @@ import numpy as np
 import random
 import math
 
-def getVolumeRatio(totalCol, df):
+def getVolumeRatio(totalCol, df, transactionNumber):
     '''
     totalCol: the name of the column that stores the total volume of the entire amount of assets.
     df: the name of the dataframe where the data is storaged
