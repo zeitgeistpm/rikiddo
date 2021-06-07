@@ -1,9 +1,5 @@
-math
+auto-py-to-exe
 pandas
 datetime
-scipy
-json
 numpy
-random
-time
 matplotlib
