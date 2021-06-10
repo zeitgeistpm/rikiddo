@@ -78,7 +78,7 @@ def lsdCostFunction(q, eVal, dynamicFee):
     sumQ = sum(q)
 
     eValue = math.log(eVal)
-    costFunction = dynamicFee * eValue
+    costFunction = dynamicFee * sumQ * eValue
     return costFunction
 
 def lsdPriceFunction_i(costFunction,totalFee,q_i,q_j):
@@ -99,9 +99,9 @@ def lsdPriceFunction_i(costFunction,totalFee,q_i,q_j):
     numerator = e_i*sumQj - qxe
     denominator = sumQj*sum_ej
     if sumQj != 0:
-        p_i = costFunction + (numerator/denominator)
+        p_i = totalFee*math.log(e_j) + (numerator/denominator)
     else:
-        p_i = costFunction
+        p_i = totalFee*math.log(e_j)
     return p_i
 
 def minRevenue(b, fee):
