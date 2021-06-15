@@ -43,8 +43,8 @@ def getVolumeRatio(totalCol, df, transactionNumber):
 
     return r
 
-def z_r(r, m, p, n):
-    z = (m*(r-n))/math.sqrt(p + (r-n)**2)
+def z_r(r):
+    z = (0.01*(r))/math.sqrt(2 + (r)**2)
     return z
 
 
