@@ -13,8 +13,8 @@ random.seed(1)
 symbol1= 'Will'
 symbol2= 'Will_not'
 
-fee, m, p, n, k = 0.03, 0.8, 8, 1, 1 #low correlated pair of assets
-traderMaxFee = 0.5
+fee, k = 0.005, 1 #low correlated pair of assets
+traderMaxFee = 0.04
 
 # %% Simulation Settings
 b = 0.7
@@ -93,7 +93,7 @@ while time.time() - start_time <4:
     asset_pool = f'account_{symbols[indexNum]}_pool'
     r = getVolumeRatio('totalPoolVolume', simulationRecord, transaction)
 
-    z = z_r(r, m, p, n)
+    z = z_r(r)
     totalFee = fee + z
     if totalFee < minRev:
         print('Your fee is lower than expected. Bounding with minRevenue')
@@ -169,12 +169,13 @@ while time.time() - start_time <4:
         transaction += 1
     
     else:
-        print('Fee is too high for the trader')
+        print(f'Fee is too high for the trader. Its value is {totalFee}')
 
 ###############################################################################################
 
-print("--- %s seconds ---" % (time.time() - start_time))
-print(f'We made {transaction} transactions in 4 seconds with LSD-LMSR')
+finalTime= time.time() - start_time
+print(f"--- {finalTime} seconds ---")
+print(f'We made {transaction} transactions in {finalTime} seconds with LSD-LMSR')
 simulationRecord.to_csv('simulationRecord.csv')
 
 plt.scatter(simulationRecord['totalFee'], simulationRecord['transactCost'])
