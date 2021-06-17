@@ -1,5 +1,5 @@
 import math
-from lsdLMSRCoreFunctions import getVolumeRatio, z_r, eValue, lsdCostFunction, lsdPriceFunction_i, minRevenue
+from lsdLMSRCoreFunctions import fixFee, getVolumeRatio, z_r, eValue, lsdCostFunction, lsdPriceFunction_i, minRevenue
 import pandas as pd
 from datetime import datetime, date, timedelta
 import json
@@ -13,8 +13,9 @@ random.seed(1)
 symbol1= 'Will'
 symbol2= 'Will_not'
 
-fee, k = 0.005, 1 #low correlated pair of assets
-traderMaxFee = 0.04
+fee = fixFee(0.04, 2)
+k=1
+traderMaxFee = 0.1
 
 # %% Simulation Settings
 b = 0.7
@@ -105,7 +106,7 @@ while time.time() - start_time <4:
     #Pool liquidity bounds
     if (q_1<15000) | (q_2<15000):
         print('LIQUIDITY WARNING: Rising fee dramatically')
-        totalFee = 0.5
+        totalFee = 0.15
     
     if totalFee <= traderMaxFee:
         #Cost function 
@@ -132,7 +133,8 @@ while time.time() - start_time <4:
                 q_2 += deltaQ
         
 
-        C_q = lsdCostFunction([q_1_pool, q_2_pool], eVal, dynamicFee)
+        # C_q = lsdCostFunction([q_1_pool, q_2_pool], eVal, dynamicFee)
+        C_q = lsdCostFunction([q_1_pool, q_2_pool], dynamicFee)
         
         transactCost = C_q - previousStateCost
 
@@ -140,7 +142,7 @@ while time.time() - start_time <4:
 
         P_q_1 = lsdPriceFunction_i(C_q, totalFee, previousState, poolInventory)
 
-        print(C_q, P_q_1)
+        print(marketSignal, buyAsset, deltaQ, transactCost)
 
         costPerUnit = (transactCost-deltaQ)/deltaQ
 
@@ -150,7 +152,7 @@ while time.time() - start_time <4:
         account1_pool : [q_1_pool], 
         account2_pool: [q_2_pool],
         'totalVolume': [q_1+q_2],
-        'totalPoolVolume': [q_2_pool+q_2_pool],
+        'totalPoolVolume': [q_1_pool+q_2_pool],
         'totalFee': [totalFee], 
         'whoBuy': [buyAsset], 
         'ratioVolume': [r], 
@@ -198,3 +200,4 @@ plt.xlabel('r')
 plt.ylabel('Total Fee')
 plt.savefig('profitsum-cost.png')
 plt.show()
+

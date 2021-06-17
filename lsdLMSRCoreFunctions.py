@@ -5,6 +5,10 @@ import numpy as np
 import random
 import math
 
+def fixFee(vig, n):
+    fee = vig/(n*math.log(n))
+    return fee
+
 def getVolumeRatio(totalCol, df, transactionNumber):
     '''
     totalCol: the name of the column that stores the total volume of the entire amount of assets.
@@ -48,38 +52,38 @@ def z_r(r):
     return z
 
 
-def eValue(q, totalFee, q_x=None):
+def eValue(q, totalFee):
     eVal = 0
     sumQ = sum(q)
-    dynamicFee = (totalFee)*sumQ
-    if q_x == None:
-        for q_i in q:
-            if dynamicFee !=0:
-                e = math.exp(q_i/dynamicFee)
-            else:
-                e = math.exp(q_i/0.03) #0.03 is the fixed value assumed for the initial fee
-            eVal += e
-    else:
-        for q_i in q.remove(q_x):
-            if dynamicFee !=0:
-                e = math.exp(q_i/dynamicFee)
-            else:
-                e = math.exp(q_i/0.03)
-            eVal += e
+    dynamicFee = totalFee*sumQ
+    for q_i in q:
+        if dynamicFee !=0:
+            e = math.exp(q_i/dynamicFee)
+        else:
+            e = math.exp(q_i/0.005) #0.005 is the fixed value assumed for the initial fee
+        eVal += e
 
     return eVal, dynamicFee
 
-def lsdCostFunction(q, eVal, dynamicFee):
-    '''
-    q: list
-    The cost function captures the amount of total assets wagered in the market where C(q0) 
-    is the market maker’s maximum subsidy to the market
-    '''
-    sumQ = sum(q)
+# def lsdCostFunction(q, eVal, dynamicFee):
+#     '''
+#     q: list
+#     The cost function captures the amount of total assets wagered in the market where C(q0) 
+#     is the market maker’s maximum subsidy to the market
+#     '''
+#     sumQ = sum(q)
 
-    eValue = math.log(eVal)
-    costFunction = dynamicFee * sumQ * eValue
-    return costFunction
+#     eValue = math.log(eVal)
+#     costFunction = dynamicFee * eValue
+#     return costFunction
+
+def lsdCostFunction(q, dynamicFee):
+    qa = np.array(q)
+    qa = qa/dynamicFee
+    vector = np.vectorize(np.exp)
+    x = vector(qa)
+    cost= dynamicFee*math.log(x.sum())
+    return cost
 
 def lsdPriceFunction_i(costFunction,totalFee,q_i,q_j):
     '''
