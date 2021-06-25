@@ -4,6 +4,7 @@ import numpy as np
 import random
 import time
 
+
 random.seed(1)
 
 symbol1= 'Will'
