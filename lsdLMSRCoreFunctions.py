@@ -65,19 +65,12 @@ def eValue(q, totalFee):
 
     return eVal, dynamicFee
 
-# def lsdCostFunction(q, eVal, dynamicFee):
-#     '''
-#     q: list
-#     The cost function captures the amount of total assets wagered in the market where C(q0) 
-#     is the market maker’s maximum subsidy to the market
-#     '''
-#     sumQ = sum(q)
-
-#     eValue = math.log(eVal)
-#     costFunction = dynamicFee * eValue
-#     return costFunction
-
 def lsdCostFunction(q, dynamicFee):
+    '''
+    q: list
+    The cost function captures the amount of total assets wagered in the market where C(q0) 
+    is the market maker’s maximum subsidy to the market
+    '''
     qa = np.array(q)
     qa = qa/dynamicFee
     vector = np.vectorize(np.exp)

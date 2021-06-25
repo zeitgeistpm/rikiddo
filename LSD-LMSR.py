@@ -1,12 +1,8 @@
-import math
 from lsdLMSRCoreFunctions import fixFee, getVolumeRatio, z_r, eValue, lsdCostFunction, lsdPriceFunction_i, minRevenue
 import pandas as pd
-from datetime import datetime, date, timedelta
-import json
 import numpy as np
 import random
 import time
-import matplotlib.pyplot as plt
 
 random.seed(1)
 
@@ -101,7 +97,7 @@ while time.time() - start_time <4:
         totalFee = minRev
 
     #how much you want to buy or sell
-    deltaQ = random.uniform(0, 1000)
+    deltaQ = random.uniform(0, 3000)
 
     #Pool liquidity bounds
     if (q_1<15000) | (q_2<15000):
@@ -144,7 +140,7 @@ while time.time() - start_time <4:
 
         print(marketSignal, buyAsset, deltaQ, transactCost)
 
-        costPerUnit = (transactCost-deltaQ)/deltaQ
+        costPerUnit = transactCost/deltaQ
 
         simdata = {'transactionNumber': [transaction], 
         account1 : [q_1], 
@@ -179,25 +175,4 @@ finalTime= time.time() - start_time
 print(f"--- {finalTime} seconds ---")
 print(f'We made {transaction} transactions in {finalTime} seconds with LSD-LMSR')
 simulationRecord.to_csv('simulationRecord.csv')
-
-plt.scatter(simulationRecord['totalFee'], simulationRecord['transactCost'])
-plt.axvline(simulationRecord['totalFee'].mean(), color='r', linestyle='-')
-plt.xlabel('Total Fee')
-plt.ylabel('Transaction Cost')
-plt.savefig('fee-cost.png')
-plt.show()
-
-plt.scatter(simulationRecord['z'], simulationRecord['transactCost'])
-plt.axvline(simulationRecord['z'].mean(), color='r', linestyle='-')
-plt.xlabel('Dynamic Fee')
-plt.ylabel('Transaction Cost')
-plt.savefig('dynfee-cost.png')
-plt.show()
-
-plt.scatter(simulationRecord['r'], simulationRecord['totalFee'])
-plt.axhline(simulationRecord['totalFee'].mean(), color='r', linestyle='-')
-plt.xlabel('r')
-plt.ylabel('Total Fee')
-plt.savefig('profitsum-cost.png')
-plt.show()
 
