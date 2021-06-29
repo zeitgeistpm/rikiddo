@@ -1,4 +1,4 @@
-from lsdLMSRCoreFunctions import fixFee, getVolumeRatio, z_r, eValue, lsdCostFunction, lsdPriceFunction_i, minRevenue
+from rikiddo_core_functions import fixFee, getVolumeRatio, z_r, eValue, lsdCostFunction, lsdPriceFunction_i, minRevenue
 import pandas as pd
 import numpy as np
 import random
