@@ -1,8 +1,8 @@
-# LSD-LMSR
-Liquidity Sensitive Dynamic LMSR
+# Rikiddo Scoring Rule
+AKA Liquidity Sensitive Dynamic LMSR
 
 
-# Liquidity Sensitive Dynamic LMSR
+# Rikiddo Scoring Rule
 This is a new Market Scoring Rule made for Zeitgeist Liquidity Pools.
 
 ## Content:
