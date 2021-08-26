@@ -31,6 +31,7 @@ class RikiddoScoringRule(object):
         self.market_value = init
         self._history = []
         self.f = vig/self.n*np.log(self.n)
+        self._prices = []
         
         if len(n_params) != 3:
             raise valueError("3 parameters were expected, seems that you've provided more/less")
@@ -152,10 +153,10 @@ class RikiddoScoringRule(object):
                             'unit_price': paid/shares,
                            #'fee': ,
                             'lp': 0})
-        self._history.append(self.p)
+        self._history.append(list(self.p))
         self.market_value += paid
-        print("%s paid %2.2f ZTG, for %2.2f shares of outcome %d, which will give him %2.2f ZTG if he wins"%(
-                name, paid, shares, outcome, shares/self.x[outcome]*self.market_value))
+        #print("%s paid %2.2f ZTG, for %2.2f shares of outcome %d, which will give him %2.2f ZTG if he wins"%(
+        #        name, paid, shares, outcome, shares/self.x[outcome]*self.market_value))
         return shares
     
     def sell_shares(self, name, shares, outcome):
@@ -168,7 +169,7 @@ class RikiddoScoringRule(object):
                             #'fee_cost': , add it for rikiddo
                             'lp': 0}) 
         self.market_value -= price        
-        self._history.append(self.p)   
+        self._history.append(list(self.p))   
 
         return price
 
@@ -193,7 +194,9 @@ class RikiddoScoringRule(object):
                             'fee_cost': 0,
                             'unit_price': prices[1]/asset_2,
                             'lp': 1})
+        self._history.append(list(self.p))
         share = [asset_1, asset_2]
+        
         return share
     
     def history(self):
