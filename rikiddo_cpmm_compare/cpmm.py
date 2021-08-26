@@ -17,6 +17,7 @@ class CPMM(object):
         self._fee_sum = []
         self._liquidity = {}
         self._book = []
+        self._history = []
         if (fee<0) | (fee>1):
             raise ValueError('Fee needs to be inside [0,1] interval')
 
@@ -79,6 +80,8 @@ class CPMM(object):
                             'paid': in_number,
                             'fee': in_number - num_in
                         })
+        self._history.append(list(self.get_prices().values()))
+        
         return num_out
 
     def sell_shares(self, out_number, asset_in, asset_out='ZTG'):
@@ -110,6 +113,8 @@ class CPMM(object):
                             'paid': out_number,
                             'fee': out_number - num_out
                         })
+        self._history.append(list(self.get_prices().values()))
+        
         return num_in
 
     def provide_liquidity(self, id, amount):
@@ -145,7 +150,9 @@ class CPMM(object):
                             'paid': amount,
                             'fee': 0
                         })
-
+        
+        self._history.append(list(self.get_prices().values()))
+        
         return liquidity_prividing
 
     @property
