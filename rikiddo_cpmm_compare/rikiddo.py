@@ -26,7 +26,6 @@ class RikiddoScoringRule(object):
                             Value for the Minimum Revenue Coefficient
                             
         """
-        self.market = market
         self.possible_outcomes = possible_outcomes
         
         self.n = len(possible_outcomes)
