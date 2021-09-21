@@ -104,9 +104,6 @@ class RikiddoScoringRule(object):
     def cost(self, x):
         return self.b*np.log(np.exp(x/self.b).sum())
     
-    def nofee_cost(self, x):
-        return np.log(np.exp(x).sum())
-    
     def _new_x(self, shares, outcome):
         new_x = self.x
         new_x[outcome] += shares        
@@ -128,12 +125,16 @@ class RikiddoScoringRule(object):
     def buy_shares(self, name, paid, outcome):
         shares = self.calculate_shares(paid, outcome)
         self.register_x(self._new_x(shares, outcome))
+        if len(self.book) < 45:
+            dynamic_fee = 0
+        else:
+            dynamic_fee = self.param_1 * self.ratio_function(self.book)/math.sqrt(self.param_2+self.ratio_function(self.book)**self.param_3)
         self._book.append({'name':name, 
                            'shares':shares, 
                            'outcome':outcome, 
                            'paid':paid, 
                            'cost_function': self.cost(self.x),
-                           'fee_cost': self.cost(self.x) - self.nofee_cost(self.x),
+                           'dynamic_fee': dynamic_fee,
                            'lp': 0})
         self._history.append(self.p)
         self.market_value += paid
@@ -144,12 +145,16 @@ class RikiddoScoringRule(object):
     
     def sell_shares(self, name, shares, outcome):
         price = self.price(-shares, outcome)
+        if len(self.book) < 45:
+            dynamic_fee = 0
+        else:
+            dynamic_fee = self.param_1 * self.ratio_function(self.book)/math.sqrt(self.param_2+self.ratio_function(self.book)**self.param_3)
         self._book.append({'name':name, 
                            'shares':-shares, 
                            'outcome':outcome, 
                            'paid':-price, 
                            'cost_function': self.cost(self.x),
-                           'fee_cost': self.cost(self.x) - self.nofee_cost(self.x),
+                           'dynamic_fee': dynamic_fee,
                            'lp': 0}) 
         self.market_value -= price        
         self._history.append(self.p)  
@@ -169,14 +174,14 @@ class RikiddoScoringRule(object):
                             'outcome': self.possible_outcomes[0],
                             'paid': prices[0], 
                             'cost_function': list(self.book['cost_function'])[-1],
-                            'fee_cost': 0,
+                            'dynamic': 0,
                             'lp': 1})
         self._book.append({'name':name, 
                             'shares': asset_2, 
                             'outcome': self.possible_outcomes[1],
                             'paid': prices[1],
                             'cost_function': list(self.book['cost_function'])[-1],
-                            'fee_cost': 0,
+                            'dynamic': 0,
                             'lp': 1})
         self._history.append(list(self.p))
         share = [asset_1, asset_2]
