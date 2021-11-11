@@ -30,7 +30,11 @@ class RikiddoComboScoringRule(object):
         """
         
         def combo_assets_maker(assets):
-            possible_combos = list(permutations(assets))
+            possible_combos = []
+            for L in range(1, len(assets)+1):
+                for subset in itertools.combinations(assets, L):
+                    possible_combos += [i for i in list(permutations(subset))]
+                    
             combo_assets = []
             for i in possible_combos:
                 value = ''
